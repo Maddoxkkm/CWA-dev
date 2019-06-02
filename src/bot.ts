@@ -1,6 +1,6 @@
-import * as discord from 'discord.js';
+import {Client} from 'discord.js';
 
-const discordBot = new discord.Client({
+const discordBot = new Client({
     messageCacheLifetime: 60,
     messageSweepInterval:400,
     messageCacheMaxSize:10,

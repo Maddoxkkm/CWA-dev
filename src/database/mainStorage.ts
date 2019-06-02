@@ -1,4 +1,5 @@
-import Enmap from 'enmap';
+import Enmap = require('enmap');
+
 import {PlayerDBEntry} from './db'
 import { Snowflake } from 'discord.js';
 

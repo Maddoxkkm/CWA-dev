@@ -1,0 +1,21 @@
+{
+    "compilerOptions": {
+      "target": "es2017",
+      "module": "commonjs",
+      "allowJs": true,
+      "checkJs": true,
+      "outDir": "./bin",
+      "sourceMap": true,
+      "strict": true,
+      "noImplicitAny": true,
+      "strictNullChecks": true
+    },
+    "include": [
+      "src/**/*.ts",
+      "./index.ts"
+    ],
+    "exclude": [
+      "node_modules"
+    ]
+  }
+  
