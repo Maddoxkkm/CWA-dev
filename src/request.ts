@@ -1,10 +1,10 @@
 import Axios, {AxiosResponse} from 'axios';
-import {stringify} from "querystring";
+import {stringify} from "qs";
 
 // not-so-basic-anymore warpper for both post and get requests :))
-export async function request(url:string, query?:any, reqBody?:any):Promise<any>{
+export async function request<T>(url:string, query?:any, reqBody?:any):Promise<T>{
     const queryUrl = query ? url + "?" + stringify(query) : url
-    const res = reqBody ? await Axios.post(queryUrl, stringify(reqBody)) : await Axios.get(queryUrl)
+    const res = reqBody ? await Axios.post<T>(queryUrl, stringify(reqBody)) : await Axios.get<T>(queryUrl)
 
     //http code is 400~599 so it's either our fault or server fault
     if(res.status >= 400 && res.status <= 599) throw res
@@ -13,10 +13,10 @@ export async function request(url:string, query?:any, reqBody?:any):Promise<any>
     else return res.data;
 }
 
-// example (post, query)
-// request("https://api.wotblitz.asia/wotb/clans/list/", {application_id: "", search: "FEAST"}).then(x => console.log(x))
+// example (get with query)
+// request<wgAPIReply>("https://api.wotblitz.asia/wotb/clans/list/", {application_id: "", search: "FEAST"}).then(x => console.log(x))
 
-// example (post, no query)
+// example (post)
 // request("https://api.wotblitz.asia/wotb/clans/list/", {}, {application_id: "", search: "FEAST"}).then(x => console.log(x))
 
 // example (post specific api)
