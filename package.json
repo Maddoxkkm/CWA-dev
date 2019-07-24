@@ -12,10 +12,10 @@
   "dependencies": {
     "@discordjs/uws": "^11.149.1",
     "axios": "^0.19.0",
-    "better-sqlite-pool": "github:eslachance/better-sqlite-pool",
+    "better-sqlite3": "^5.4.0",
     "bufferutil": "^4.0.1",
     "discord.js": "^11.5.1",
-    "enmap": "^4.8.7",
+    "enmap": "^5.0.1",
     "erlpack": "github:discordapp/erlpack",
     "express": "^4.17.1",
     "qs": "^6.7.0",
