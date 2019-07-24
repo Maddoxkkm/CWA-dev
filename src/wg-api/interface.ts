@@ -40,14 +40,14 @@ export type PlayerStatsOverviewDataStroage = {
 }
 
 export type PlayerStatsOverviewData = {
-    statistics:{
-        all:{
+    statistics: {
+        all: {
             spotted: number,
             max_frags_tank_id: number,
             hits: number,
-            frags: number, 
-            max_xp: number, 
-            max_xp_tank_id: number, 
+            frags: number,
+            max_xp: number,
+            max_xp_tank_id: number,
             wins: number,
             losses: number,
             capture_points: number,
@@ -70,7 +70,7 @@ export type PlayerStatsOverviewData = {
     nickname: string
 }
 
-export interface playerOverviewQuery extends wgAPIQuery{
+export interface playerOverviewQuery extends wgAPIQuery {
     account_id: number,
     access_token?: string,
     extra?: string,
@@ -78,7 +78,7 @@ export interface playerOverviewQuery extends wgAPIQuery{
     language?: string
 }
 
-export interface playerClanQuery extends wgAPIQuery{
+export interface playerClanQuery extends wgAPIQuery {
     account_id: number,
     extra?: string,
     fields?: string,

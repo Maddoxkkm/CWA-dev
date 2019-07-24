@@ -1,13 +1,13 @@
-import Axios, {AxiosResponse} from 'axios';
-import {stringify} from "qs";
+import Axios, { AxiosResponse } from 'axios';
+import { stringify } from "qs";
 
 // not-so-basic-anymore warpper for both post and get requests :))
-export async function request<T>(url:string, query?:any, reqBody?:any):Promise<T>{
+export async function request<T>(url: string, query?: any, reqBody?: any): Promise<T> {
     const queryUrl = query ? url + "?" + stringify(query) : url
     const res = reqBody ? await Axios.post<T>(queryUrl, stringify(reqBody)) : await Axios.get<T>(queryUrl)
 
     //http code is 400~599 so it's either our fault or server fault
-    if(res.status >= 400 && res.status <= 599) throw res
+    if (res.status >= 400 && res.status <= 599) throw res
 
     //well if it's not 400~599 it's likely to be an 'ok'
     else return res.data;

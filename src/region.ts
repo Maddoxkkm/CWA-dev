@@ -16,7 +16,7 @@ export type regionalData = {
     }
 }
 export const regionData: regionalData = {
-    NA:{
+    NA: {
         serverName: "North America Server",
         apiDomainName: "api.wotblitz.com",
         shortServerName: "NA",
@@ -24,7 +24,7 @@ export const regionData: regionalData = {
         mainLanguage: "en",
         toplevelDomain: "com"
     },
-    ASIA:{
+    ASIA: {
         serverName: "Asia Server",
         apiDomainName: "api.wotblitz.asia",
         shortServerName: "ASIA",
@@ -32,7 +32,7 @@ export const regionData: regionalData = {
         mainLanguage: "en",
         toplevelDomain: "asia"
     },
-    EU:{
+    EU: {
         serverName: "European Server",
         apiDomainName: "api.wotblitz.eu",
         shortServerName: "EU",
@@ -40,7 +40,7 @@ export const regionData: regionalData = {
         mainLanguage: "en",
         toplevelDomain: "eu"
     },
-    RU:{
+    RU: {
         serverName: "Russian Server",
         apiDomainName: "api.wotblitz.ru",
         shortServerName: "RU",
