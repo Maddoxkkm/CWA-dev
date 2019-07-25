@@ -15,6 +15,20 @@ export type regionalData = {
         readonly toplevelDomain: string
     }
 }
+
+export function stringToRegion(x: string): region | undefined {
+    switch (x.toUpperCase()) {
+        case "NA":
+            return region.NA;
+        case "ASIA":
+            return region.ASIA;
+        case "EU":
+            return region.EU;
+        case "RU":
+            return region.RU;
+    }
+    return undefined;
+}
 export const regionData: regionalData = {
     NA: {
         serverName: "North America Server",
