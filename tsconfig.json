@@ -13,7 +13,8 @@
       "esModuleInterop": true  
     },
     "include": [
-      "src/**/*.ts",
+      "botBackend/**/*.ts",
+      "webService/**/*.ts",
       "./index.ts"
     ],
     "exclude": [
