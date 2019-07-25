@@ -1,13 +1,13 @@
 import { wgAPIReply, wgAPIQuery } from './interface';
 import { request } from '../request'
 
-import * as botSettings from '../../settings.json';
+import { wgAPIToken } from '../../settings.json';
 
 export class WGAPICaller {
     private readonly token: string;
     private readonly maximumAPITries: number;
     constructor(maximumAPITries: number = 3) {
-        this.token = botSettings.wgAPIToken;
+        this.token = wgAPIToken;
         this.maximumAPITries = maximumAPITries;
     }
 
