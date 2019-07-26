@@ -59,5 +59,5 @@ export class Player {
     }
 }
 
-new Player(2006665991).statsOverview().then(x => console.log(x))
-new Player(2006665991).clanData().then(x => console.log(x))
+//new Player(2006665991).statsOverview().then(x => console.log(x))
+//new Player(2006665991).clanData().then(x => console.log(x))
