@@ -1,6 +1,20 @@
-import { request } from './botBackend/request'
+import express = require("express");
 
-const test = request('https://api.worldoftanks.asia/wgn/servers/info/?application_id=71df07a3f5c764028c167d09eec0cd99')
-    .then(x => console.log(x))
+import { regionData, region, stringToRegion } from './botBackend/region'
+import { Snowflake } from "discord.js";
 
-console.log('Hello World!!')
+const main = express();
+
+import CWABot from './botBackend/bot'
+
+const cwabot = new CWABot();
+
+main.use((req, res, next) => {
+    console.log(req.path)
+    next();
+})
+
+main.use('/api/verify/', cwabot.verificationApp)
+main.listen(3000)
+
+cwabot.startBot();
