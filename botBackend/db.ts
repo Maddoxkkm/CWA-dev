@@ -1,7 +1,7 @@
 //Load Enmap and the base
 import Enmap = require('enmap');
 
-import { region, regionData } from './region'
+import { region, stringToRegion } from './region'
 import { Snowflake } from 'discord.js';
 import { Player } from './player';
 import { PlayerStatsOverviewData, PlayerClanData } from './wg-api/interface';
@@ -20,6 +20,12 @@ export interface PlayerDBEntry {
     region: region,
     player: PlayerStatsOverviewData,
     clan: PlayerClanData,
+    language: Language,
+}
+
+export enum Language {
+    EN = 'en',
+    JP = 'jp'
 }
 
 export class PlayerDB extends Enmap<Snowflake, PlayerDBEntry>{
@@ -52,7 +58,9 @@ export class PlayerDB extends Enmap<Snowflake, PlayerDBEntry>{
             lastUpdated: new Date().getTime(),
             region: realm,
             player: playerStats,
-            clan: await player.clanData()
+            clan: await player.clanData(),
+            // Default them to EN language
+            language: Language.EN
         };
 
         this.set(discordID, data);
@@ -71,7 +79,7 @@ export class PlayerDB extends Enmap<Snowflake, PlayerDBEntry>{
         const now: number = new Date().getTime();
 
         if (profile.lastUpdated + playerUpdatePeriod < now) {
-            const player: Player = new Player(profile.wgID, profile.region);
+            const player: Player = new Player(profile.wgID, stringToRegion(profile.region));
             const newPlayerStats: PlayerStatsOverviewData = await player.statsOverview();
 
             // Null values indicates the players has no battles.
