@@ -27,7 +27,7 @@ export class Player {
         return region.ASIA;
     }
 
-    public async statsOverview(): Promise<PlayerStatsOverviewData> {
+    public async statsOverview(): Promise<PlayerStatsOverviewData | undefined> {
         const apiUrl = regionData[this.realm].apiDomainName
         const query: playerOverviewQuery = {
             account_id: this.userID,
@@ -37,12 +37,12 @@ export class Player {
         const result: wgAPIReply<PlayerStatsOverviewDataStroage> = await apicaller.call<PlayerStatsOverviewDataStroage>(`http://${apiUrl}/wotb/account/info/`, query)
         const final: undefined | PlayerStatsOverviewData = result.data[this.userID] ? result.data[this.userID] : undefined
         if (!final) {
-            throw 1;
+            return undefined;
         }
         return final;
     }
 
-    public async clanData(): Promise<PlayerClanData> {
+    public async clanData(): Promise<PlayerClanData | undefined> {
         const apiUrl = regionData[this.realm].apiDomainName
         const query: playerClanQuery = {
             account_id: this.userID,
@@ -51,13 +51,13 @@ export class Player {
         }
         const result: wgAPIReply<PlayerClanDataStorage> = await apicaller.call<PlayerClanDataStorage>(`http://${apiUrl}/wotb/clans/accountinfo/`, query)
         const final: undefined | PlayerClanData = result.data[this.userID] ? result.data[this.userID] : undefined
-        if (!final) {
-            throw 1;
+        //console.log(final)
+        if (!final || !final.clan || !final.clan.clan_id) {
+            return undefined;
         }
-        console.log(final.clan)
         return final;
     }
 }
 
 //new Player(2006665991).statsOverview().then(x => console.log(x))
-//new Player(2006665991).clanData().then(x => console.log(x))
+//new Player(2005957232).clanData().then(x => console.log(x))

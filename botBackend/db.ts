@@ -19,7 +19,7 @@ export interface PlayerDBEntry {
     lastUpdated: number,
     region: region,
     player: PlayerStatsOverviewData,
-    clan: PlayerClanData,
+    clan: PlayerClanData | undefined,
     language: Language,
 }
 
@@ -48,7 +48,7 @@ export class PlayerDB extends Enmap<Snowflake, PlayerDBEntry>{
 
         const player: Player = new Player(wgID, realm);
 
-        const playerStats: PlayerStatsOverviewData = await player.statsOverview();
+        const playerStats: PlayerStatsOverviewData | undefined = await player.statsOverview();
 
         // Null values indicates the players has no battles.
         if (!playerStats) throw 3
@@ -80,7 +80,7 @@ export class PlayerDB extends Enmap<Snowflake, PlayerDBEntry>{
 
         if (profile.lastUpdated + playerUpdatePeriod < now) {
             const player: Player = new Player(profile.wgID, stringToRegion(profile.region));
-            const newPlayerStats: PlayerStatsOverviewData = await player.statsOverview();
+            const newPlayerStats: PlayerStatsOverviewData | undefined = await player.statsOverview();
 
             // Null values indicates the players has no battles.
             // Should not happen but just in case
