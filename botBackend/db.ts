@@ -3,7 +3,7 @@ import Enmap = require('enmap');
 
 import { region, stringToRegion } from './region'
 import { Snowflake } from 'discord.js';
-import { Player } from './player';
+import Player from './player';
 import { PlayerStatsOverviewData, PlayerClanData } from './wg-api/interface';
 
 export enum PlayerDBOperationResults {
