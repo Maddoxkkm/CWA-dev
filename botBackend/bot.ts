@@ -171,7 +171,6 @@ export default class CWABot extends Client {
             }
             apiCaller.call<TokenReply>(`https://api.worldoftanks.${servData.toplevelDomain}/wot/auth/prolongate/`, newQuery)
                 .then(async (reply) => {
-                    console.log(reply)
                     // If it's a validated player
                     const account_id = reply.data.account_id;
 

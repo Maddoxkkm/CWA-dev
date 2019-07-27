@@ -1,8 +1,8 @@
-import express = require("express");
-
-const main = express();
-
+import express from 'express'
 import CWABot from './botBackend/bot'
+
+import path from 'path';
+const main = express();
 
 const cwabot = new CWABot();
 
@@ -11,8 +11,10 @@ main.use((req, res, next) => {
     next();
 })
 
-main.all('/', (req, res) =>{
-    res.send("Welcome to CWA Homepage, the site is currently under construction.")
+main.use(express.static(path.join(__dirname, "public")))
+
+main.all('/', (req, res) => {
+    res.sendFile(path.join(__dirname, "public/index.html"))
 })
 
 main.use('/api/verify/', cwabot.verificationApp)
