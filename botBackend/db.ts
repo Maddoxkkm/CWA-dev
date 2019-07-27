@@ -12,6 +12,7 @@ export enum PlayerDBOperationResults {
     WGIDExists = 2,
     NoBattles = 3,
     PlayerNotFound = 4,
+    UpdateNotNeeded = 5,
 }
 
 export interface PlayerDBEntry {
@@ -93,7 +94,7 @@ export class PlayerDB extends Enmap<Snowflake, PlayerDBEntry>{
             profile.lastUpdated = now;
 
             this.set(discordID, profile)
-        }
-        return 0;
+            return 0;
+        } else return 5;
     }
 }

@@ -1,5 +1,5 @@
 // Basic Discord.js Imports
-import { Client, Snowflake, Guild, GuildMember } from 'discord.js';
+import { Client, Snowflake, Guild, GuildMember, Message, Channel, User } from 'discord.js';
 
 // Express for Identity Verification Subapp
 import express, { Express } from 'express';
@@ -8,7 +8,7 @@ import express, { Express } from 'express';
 import { debug, prefix, targetGuild, discordToken } from '../settings.json';
 
 // Import Player Storage
-import { PlayerDB, PlayerDBEntry, Language } from './db';
+import { PlayerDB, PlayerDBEntry, Language, PlayerDBOperationResults } from './db';
 
 // Import Region Data for assists
 import { stringToRegion, region, regionData } from './region';
@@ -23,22 +23,41 @@ export default class CWABot extends Client {
 
     constructor() {
         // My settings, edit?
-        super({
-            messageCacheLifetime: 60,
-            messageSweepInterval: 400,
-            messageCacheMaxSize: 10,
-            disabledEvents: ["TYPING_START"]
-        })
+        super()
         this.loginToken = discordToken;
         this.db = new PlayerDB(debug);
 
         // Chain On events here
-        this.on("error", e => console.log(e));
+        this.on("error", console.error);
+
+        // Chuck Invite link to console 
         this.on("ready", () => {
             this.generateInvite(["ADMINISTRATOR"])
                 .then(link => `Link for the invite is ${link}`)
                 .catch(console.error)
         })
+
+        // Message Handler (Commands and stuff)
+        this.on("message", this.messageHandler)
+
+        // Player Updater (whenever they start typing will conduct an check)
+        this.on("typingStart", (channel: Channel, user: User): void => {
+            const guildUser: GuildMember | undefined = this.servingGuild.members.get(user.id);
+            if (!guildUser) return;
+            if (this.db.hasPlayer(guildUser.id)) this.db.updateProfile(guildUser.id).then(result => {
+                if (result === PlayerDBOperationResults.Okay){
+                    this.nicknameChange(guildUser);
+                    this.grantRoles(guildUser);
+                }
+            })
+        })
+
+        // Member Join Handler (new member joining)
+        //this.on("guildMemberAdd")
+    }
+
+    // Message Handler (for commands)
+    private messageHandler(message: Message): void{
     }
 
     // Obtain the Guild Object that this bot is specifically serving, and return an error if the target guild is not found. 
@@ -110,6 +129,7 @@ export default class CWABot extends Client {
     private nicknameChange(user: GuildMember): void {
         const playerEntry: PlayerDBEntry | undefined = this.db.get(user.id)
         if (!playerEntry) return;
+        if (!playerEntry.enforceNickname) return;
 
         try {
             if (!playerEntry.clan)
@@ -183,4 +203,8 @@ interface TokenReply {
     access_token: string,
     account_id: number,
     expires_at: number
+}
+
+enum CWARoles {
+
 }
