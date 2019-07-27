@@ -21,6 +21,7 @@ export interface PlayerDBEntry {
     player: PlayerStatsOverviewData,
     clan: PlayerClanData | undefined,
     language: Language,
+    enforceNickname: Boolean,
 }
 
 export enum Language {
@@ -60,7 +61,8 @@ export class PlayerDB extends Enmap<Snowflake, PlayerDBEntry>{
             player: playerStats,
             clan: await player.clanData(),
             // Default them to EN language
-            language: Language.EN
+            language: Language.EN,
+            enforceNickname: true
         };
 
         this.set(discordID, data);
