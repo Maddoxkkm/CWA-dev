@@ -14,8 +14,7 @@ import { PlayerDB, PlayerDBEntry, Language, PlayerDBOperationResults } from './d
 import { stringToRegion, region, regionData } from './region';
 
 // WG API Callers
-import { WGAPICaller } from './wg-api/caller';
-import { wgAPIQuery } from './wg-api/interface.js';
+import Player from './player';
 
 export default class CWABot extends Client {
     private readonly loginToken: string;
@@ -82,27 +81,28 @@ export default class CWABot extends Client {
     // Require review (may possibly need better implementation)
     private grantRoles(user: GuildMember): void {
         const playerEntry: PlayerDBEntry | undefined = this.db.get(user.id)
-        const roleHere = ["603936154038829067", "604155231915343891", "603936091560476683", "604240305624973323", "604156450280964097", "604156451744776208"]
-        let roleArray: Snowflake[] = [];
+        const roleHere: CWARoles[] = 
+            [CWARoles.Verified, CWARoles.ClanDeputies, CWARoles.ClanLeader, CWARoles.ClanMembers, CWARoles.English, CWARoles.Japanese]
+        let roleArray: CWARoles[] = [];
         if (!playerEntry) return;
 
         // A verified player should have at least 10 battles.
         if (playerEntry.player.statistics.all.battles > 10)
             // "Verified"
-            roleArray.push("603936154038829067");
+            roleArray.push(CWARoles.Verified);
         // If it's not a verified member don't even give role.
         else return;
         if (playerEntry.clan) {
             if (playerEntry.clan.clan.members_count > 10) {
                 // They are in a valid clan
                 // "Clan Member"
-                roleArray.push("604155231915343891");
+                roleArray.push(CWARoles.ClanMembers);
                 if (playerEntry.clan.role === "commander")
                     // "Clan Leader"
-                    roleArray.push("603936091560476683");
+                    roleArray.push(CWARoles.ClanLeader);
                 if (playerEntry.clan.role === "executive_officer")
                     // "Clan Deputies"
-                    roleArray.push("604240305624973323");
+                    roleArray.push(CWARoles.ClanDeputies);
             }
 
         }
@@ -110,20 +110,21 @@ export default class CWABot extends Client {
         switch (playerEntry.language) {
             case Language.EN:
                 // "English"
-                roleArray.push("604156450280964097");
+                roleArray.push(CWARoles.English);
                 break;
             case Language.JP:
                 // "Japanese"
-                roleArray.push("604156451744776208");
+                roleArray.push(CWARoles.Japanese);
                 break;
         }
 
         // Get user original roles
-        roleArray = roleArray.concat(user.roles.array().map(x => x.id).filter(x => roleHere.indexOf(x) === -1))
-        console.log(roleArray)
+        let roleSFArray: string[] = roleArray.map(x => x.toString())
+        const roleHereSF: string[] = roleHere.map(x => x.toString())
+
+        roleSFArray = roleSFArray.concat(user.roles.array().map(x => x.id).filter(x => roleHereSF.indexOf(x) === -1))
         // Update roles on the user
-        user.setRoles(roleArray).catch(console.error);
-        return;
+        user.setRoles(roleSFArray).catch(console.error);
     }
 
     private nicknameChange(user: GuildMember): void {
@@ -133,8 +134,8 @@ export default class CWABot extends Client {
 
         try {
             if (!playerEntry.clan)
-                user.setNickname(`${playerEntry.player.nickname}`)
-            else user.setNickname(`${playerEntry.player.nickname} [${playerEntry.clan.clan.tag}]`)
+                user.setNickname(`${playerEntry.player.nickname}`).catch(console.error)
+            else user.setNickname(`${playerEntry.player.nickname} [${playerEntry.clan.clan.tag}]`).catch(console.error)
         } catch (error) {console.log(error)}
         return;
     }
@@ -156,7 +157,7 @@ export default class CWABot extends Client {
             const user: GuildMember | undefined = this.servingGuild.members.get(discordID);
 
             if (!server || !user)
-                return res.status(400).send("400 Invalid Path");
+                return res.status(400).send("400 Bad Request");
 
             const servData = regionData[server];
             if (query.status !== "ok")
@@ -165,14 +166,11 @@ export default class CWABot extends Client {
 
             // now we've got everything, time to grab the access token (and verify it), 
             // not using the player ID directly (because the call can be made up and checking validity of token is more secure)
-            const apiCaller: WGAPICaller = new WGAPICaller(1);
-            const newQuery: TokenProlong = {
-                access_token: query.access_token
-            }
-            apiCaller.call<TokenReply>(`https://api.worldoftanks.${servData.toplevelDomain}/wot/auth/prolongate/`, newQuery)
-                .then(async (reply) => {
+            // Changed strategy from token renewal to directly verifying with player request
+            new Player(query.account_id, server, query.access_token).statsOverview()
+                .then(async () => {
                     // If it's a validated player
-                    const account_id = reply.data.account_id;
+                    const account_id = query.account_id;
 
                     if (this.db.hasPlayer(user.id, account_id)) return res.status(403).send("User has been registered")
                     await this.db.setPlayer(account_id, server, discordID);
@@ -181,7 +179,6 @@ export default class CWABot extends Client {
                     this.nicknameChange(user);
 
                     return res.send("Your Player data and Discord account has now been linked. Your roles and nickname in the server will be updated shortly")
-
                 })
                 .catch(reply => {
                     console.log(reply)
@@ -193,17 +190,16 @@ export default class CWABot extends Client {
 }
 
 
-interface TokenProlong extends wgAPIQuery {
-    access_token: string,
-    expires_at?: number
+export const enum CWARoles {
+    Council = "401743876752408586",
+    Moderator = "401826604726222848",
+    Umpire = "403393083825192971",
+    MajorBlitzContributor = "401983395053436929",
+    ClanLeader = "603936091560476683",
+    ClanDeputies = "604240305624973323",
+    ClanMembers = "604155231915343891",
+    Verified = "603936154038829067",
+    English = "604156450280964097",
+    Japanese = "604156451744776208"
 }
 
-interface TokenReply {
-    access_token: string,
-    account_id: number,
-    expires_at: number
-}
-
-enum CWARoles {
-
-}

@@ -5,13 +5,15 @@ import { region, regionData } from './region'
 const apicaller = new WGAPICaller();
 
 // Player class that only accepts playerID and realm 
-export class Player {
+export default class Player {
     public readonly realm: region;
     public readonly userID: number;
+    private readonly token: string | undefined;
 
-    constructor(userID: number, realm?: region) {
+    constructor(userID: number, realm?: region, token?: string) {
         this.realm = realm ? realm : this.getRealm(userID)
         this.userID = userID;
+        this.token = token
     }
 
     private getRealm(userID: number): region {
@@ -34,7 +36,9 @@ export class Player {
             fields: '-statistics.clan, -statistics.frags, -private',
             language: 'en'
         }
+        if (this.token) query.access_token = this.token;
         const result: wgAPIReply<PlayerStatsOverviewDataStroage> = await apicaller.call<PlayerStatsOverviewDataStroage>(`http://${apiUrl}/wotb/account/info/`, query)
+      
         const final: undefined | PlayerStatsOverviewData = result.data[this.userID] ? result.data[this.userID] : undefined
         if (!final) {
             return undefined;
