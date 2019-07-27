@@ -1,8 +1,5 @@
 import express = require("express");
 
-import { regionData, region, stringToRegion } from './botBackend/region'
-import { Snowflake } from "discord.js";
-
 const main = express();
 
 import CWABot from './botBackend/bot'
