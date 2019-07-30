@@ -22,7 +22,6 @@ export default class CWABot extends Client {
     public db: DB;
 
     constructor() {
-        // My settings, edit?
         super()
         this.loginToken = discordToken;
         this.db = PlayerDB;
@@ -45,7 +44,7 @@ export default class CWABot extends Client {
             const guildUser: GuildMember | undefined = this.servingGuild.members.get(user.id);
             if (!guildUser) return;
             if (this.db.hasPlayer(guildUser.id)) this.db.updateProfile(guildUser.id).then(result => {
-                if (result === PlayerDBOperationResults.Okay){
+                if (result === PlayerDBOperationResults.Okay) {
                     this.nicknameChange(guildUser);
                     this.grantRoles(guildUser);
                 }
