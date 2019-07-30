@@ -9,7 +9,7 @@ import { debug, prefix, targetGuild, discordToken } from '../settings.json';
 
 // Import Player Storage
 import PlayerDB from './db'
-import  { DB, PlayerDBEntry, Language, PlayerDBOperationResults } from './db';
+import { DB, PlayerDBEntry, Language, PlayerDBOperationResults } from './db';
 
 // Import Region Data for assists
 import { stringToRegion, region, regionData } from './region';
@@ -82,48 +82,58 @@ export default class CWABot extends Client {
     // Require review (may possibly need better implementation)
     private grantRoles(user: GuildMember): void {
         const playerEntry: PlayerDBEntry | undefined = this.db.get(user.id)
-        const roleHere: CWARoles[] = 
-            [CWARoles.Verified, CWARoles.ClanDeputies, CWARoles.ClanLeader, CWARoles.ClanMembers, CWARoles.English, CWARoles.Japanese]
+        const roleHere: string[] =
+            [CWARoles.Verified,
+            CWARoles.ClanDeputies,
+            CWARoles.ClanLeader,
+            CWARoles.ClanMembers,
+            CWARoles.English,
+            CWARoles.Japanese]
+                // Change them into strings first (since we won't be needing them in enum form)
+                .map(x => x.toString())
         let roleArray: CWARoles[] = [];
         if (!playerEntry) return;
 
-        // A verified player should have at least 10 battles.
-        if (playerEntry.player.statistics.all.battles > 10)
-            // "Verified"
-            roleArray.push(CWARoles.Verified);
-        // If it's not a verified member don't even give role.
-        else return;
-        if (playerEntry.clan) {
-            if (playerEntry.clan.clan.members_count > 10) {
-                // They are in a valid clan
-                // "Clan Member"
-                roleArray.push(CWARoles.ClanMembers);
-                if (playerEntry.clan.role === "commander")
-                    // "Clan Leader"
-                    roleArray.push(CWARoles.ClanLeader);
-                if (playerEntry.clan.role === "executive_officer")
-                    // "Clan Deputies"
-                    roleArray.push(CWARoles.ClanDeputies);
+        if (playerEntry) {
+            // A verified player should have at least 10 battles.
+            if (playerEntry.player.statistics.all.battles > 10)
+                // "Verified"
+                roleArray.push(CWARoles.Verified);
+            // If it's not a verified member don't even give role.
+            else return;
+            if (playerEntry.clan) {
+                if (playerEntry.clan.clan.members_count > 10) {
+                    // They are in a valid clan
+                    // "Clan Member"
+                    roleArray.push(CWARoles.ClanMembers);
+                    if (playerEntry.clan.role === "commander")
+                        // "Clan Leader"
+                        roleArray.push(CWARoles.ClanLeader);
+                    if (playerEntry.clan.role === "executive_officer")
+                        // "Clan Deputies"
+                        roleArray.push(CWARoles.ClanDeputies);
+                }
+
             }
 
+            switch (playerEntry.language) {
+                case Language.EN:
+                    // "English"
+                    roleArray.push(CWARoles.English);
+                    break;
+                case Language.JP:
+                    // "Japanese"
+                    roleArray.push(CWARoles.Japanese);
+                    break;
+            }
         }
 
-        switch (playerEntry.language) {
-            case Language.EN:
-                // "English"
-                roleArray.push(CWARoles.English);
-                break;
-            case Language.JP:
-                // "Japanese"
-                roleArray.push(CWARoles.Japanese);
-                break;
-        }
-
-        // Get user original roles
+        // Turn the roles into snowflakes
         let roleSFArray: string[] = roleArray.map(x => x.toString())
         const roleHereSF: string[] = roleHere.map(x => x.toString())
 
-        roleSFArray = roleSFArray.concat(user.roles.array().map(x => x.id).filter(x => roleHereSF.indexOf(x) === -1))
+        // make a list of roles (from current user) that cannot be granted via this method and combine with list or roles granted right now.
+        roleSFArray = roleSFArray.concat(user.roles.array().map(x => x.id).filter(x => roleHere.indexOf(x) === -1))
         // Update roles on the user
         user.setRoles(roleSFArray).catch(console.error);
     }
@@ -137,7 +147,7 @@ export default class CWABot extends Client {
             if (!playerEntry.clan)
                 user.setNickname(`${playerEntry.player.nickname}`).catch(console.error)
             else user.setNickname(`${playerEntry.player.nickname} [${playerEntry.clan.clan.tag}]`).catch(console.error)
-        } catch (error) {console.log(error)}
+        } catch (error) { console.log(error) }
         return;
     }
 

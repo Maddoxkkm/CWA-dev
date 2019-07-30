@@ -6,6 +6,8 @@ import { Snowflake } from 'discord.js';
 import Player from './player';
 import { PlayerStatsOverviewData, PlayerClanData } from './wg-api/interface';
 
+import { debug } from '../settings.json'
+
 export enum PlayerDBOperationResults {
     Okay = 0,
     DiscordIDExists = 1,
