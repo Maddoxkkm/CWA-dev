@@ -3,7 +3,7 @@ import { request } from '../request'
 
 import { wgAPIToken } from '../../settings.json';
 
-export class WGAPICaller {
+class WGAPICaller {
     private readonly token: string;
     private readonly maximumAPITries: number;
     constructor(maximumAPITries: number = 3) {
@@ -27,3 +27,5 @@ export class WGAPICaller {
         throw res
     }
 }
+
+export default new WGAPICaller();

@@ -8,7 +8,8 @@ import express, { Express } from 'express';
 import { debug, prefix, targetGuild, discordToken } from '../settings.json';
 
 // Import Player Storage
-import { PlayerDB, PlayerDBEntry, Language, PlayerDBOperationResults } from './db';
+import PlayerDB from './db'
+import  { DB, PlayerDBEntry, Language, PlayerDBOperationResults } from './db';
 
 // Import Region Data for assists
 import { stringToRegion, region, regionData } from './region';
@@ -18,13 +19,13 @@ import Player from './player';
 
 export default class CWABot extends Client {
     private readonly loginToken: string;
-    public db: PlayerDB;
+    public db: DB;
 
     constructor() {
         // My settings, edit?
         super()
         this.loginToken = discordToken;
-        this.db = new PlayerDB(debug);
+        this.db = PlayerDB;
 
         // Chain On events here
         this.on("error", console.error);

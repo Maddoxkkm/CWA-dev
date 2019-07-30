@@ -1,8 +1,6 @@
-import { WGAPICaller } from './wg-api/caller'
+import WGAPICaller from './wg-api/caller'
 import { wgAPIReply, playerClanQuery, playerOverviewQuery, PlayerClanData, PlayerStatsOverviewData, PlayerStatsOverviewDataStroage, PlayerClanDataStorage } from './wg-api/interface'
 import { region, regionData } from './region'
-
-const apicaller = new WGAPICaller();
 
 // Player class that only accepts playerID and realm 
 export default class Player {
@@ -37,7 +35,7 @@ export default class Player {
             language: 'en'
         }
         if (this.token) query.access_token = this.token;
-        const result: wgAPIReply<PlayerStatsOverviewDataStroage> = await apicaller.call<PlayerStatsOverviewDataStroage>(`http://${apiUrl}/wotb/account/info/`, query)
+        const result: wgAPIReply<PlayerStatsOverviewDataStroage> = await WGAPICaller.call<PlayerStatsOverviewDataStroage>(`http://${apiUrl}/wotb/account/info/`, query)
       
         const final: undefined | PlayerStatsOverviewData = result.data[this.userID] ? result.data[this.userID] : undefined
         if (!final) {
@@ -53,7 +51,7 @@ export default class Player {
             extra: 'clan',
             language: 'en'
         }
-        const result: wgAPIReply<PlayerClanDataStorage> = await apicaller.call<PlayerClanDataStorage>(`http://${apiUrl}/wotb/clans/accountinfo/`, query)
+        const result: wgAPIReply<PlayerClanDataStorage> = await WGAPICaller.call<PlayerClanDataStorage>(`http://${apiUrl}/wotb/clans/accountinfo/`, query)
         const final: undefined | PlayerClanData = result.data[this.userID] ? result.data[this.userID] : undefined
         //console.log(final)
         if (!final || !final.clan || !final.clan.clan_id) {

@@ -30,9 +30,9 @@ export enum Language {
     JP = 'jp'
 }
 
-export class PlayerDB extends Enmap<Snowflake, PlayerDBEntry>{
+class PlayerDB extends Enmap<Snowflake, PlayerDBEntry>{
     private readonly debug: boolean;
-    
+
     constructor(debug: boolean = false) {
         if (debug) {
             super();
@@ -98,3 +98,6 @@ export class PlayerDB extends Enmap<Snowflake, PlayerDBEntry>{
         } else return 5;
     }
 }
+
+export default new PlayerDB(debug);
+export { PlayerDB as DB }
