@@ -5,7 +5,7 @@ import { Client, Snowflake, Guild, GuildMember, Message, Channel, User } from 'd
 import express, { Express } from 'express';
 
 // Import Settings and various tokens
-import { debug, prefix, targetGuild, discordToken, domain } from '../settings.json';
+import { debug, prefix, targetGuild, discordToken, domain, localdebugging } from '../settings.json';
 
 import WGAPICaller from './wg-api/caller'
 
@@ -31,7 +31,7 @@ class CWABot extends Client {
         this.loginToken = discordToken;
         this.db = PlayerDB;
 
-        if (debug) this.serverDomain = "localhost";
+        if (localdebugging) this.serverDomain = "localhost";
         else this.serverDomain = domain;
 
         // Chain On events here
@@ -67,7 +67,41 @@ class CWABot extends Client {
     }
 
     // Message Handler (for commands)
-    private messageHandler(message: Message): void{
+    private async messageHandler(message: Message): Promise<void> {
+        // get user id in guild
+        const guildUser: GuildMember | undefined = this.servingGuild.members.get(message.member.id)
+        if (!guildUser) return;
+        const rawMsg: string = message.cleanContent;
+
+        const commandPartMsg: string = rawMsg.split(" ")[0]
+        if (!commandPartMsg.startsWith(prefix)) return;
+
+        const command: command | undefined = this.commandMap.get(commandPartMsg.replace(prefix, ''));
+        if (!command) return;
+
+        if (!command.permission(guildUser, this)) return;
+
+        return command.do(message, this)
+
+    }
+
+    private get commandMap(): Map<string, command> {
+        return new Map(
+            [
+                ["verify", {
+                    name: "Identity Verification Command",
+                    command: "verify",
+                    usage: `${prefix}verify`,
+                    description: `Allows you to link your Wargaming Account with your Discord Account within ${this.user.setUsername}`,
+                    async do(d: Message, b: CWABot): Promise<void> {
+                        b.sendVerification(d.member)
+                    },
+                    permission: (user: GuildMember, b: CWABot): boolean => {
+                        return !this.db.hasPlayer(user.id) && !!b.servingGuild.members.get(user.id)
+                    }
+                }]
+            ]
+        )
     }
 
     // Obtain the Guild Object that this bot is specifically serving, and return an error if the target guild is not found. 
@@ -87,6 +121,35 @@ class CWABot extends Client {
                 console.log("Bot Login Successful!")
                 return;
             })
+    }
+
+    private async sendVerification(user: GuildMember): Promise<void> {
+        const query: wgAuthQuery = {
+            redirect_uri: `http://${this.serverDomain}${this.verificationApp.mountpath}ASIA/${user.user.id}/`,
+            nofollow: 1
+        }
+
+        try {
+            const redirectObject: any = (await WGAPICaller.call(`https://api.worldoftanks.asia/wot/auth/login/`, query)).data;
+            if (!redirectObject.location) return;
+            const url: string = redirectObject.location
+
+            const embed: CWAEmbed = new CWAEmbed(this)
+                .setColor(EmbedColor.Basic)
+                .setTitle(`${this.user.username}'s Player Verification Module`)
+                .setDescription(`Login Via your Wargaming account to verify your in-game Identity!\n
+                We only support verification of Asia server Account due to this being a Asia server based event.\n
+                We do not have access to your account details as you are logging in via Wargaming's Portal, 
+                which will only give us information about your Account ID and an Token which we will use to verify your identity.\n
+                The link will expire after a certain amount of time.\n\n[Click Here To Verify!!](${url})`)
+
+            user.send('', embed).then(() => console.log(`sent verification link to ${user.user.username} (${user.id})`)).catch(console.error)
+            return;
+
+        } catch (e) {console.error(e)}
+        
+
+        
     }
 
     // Role Grant (Hard-coded Roles ID)
@@ -228,6 +291,12 @@ export interface command {
     permission(u: GuildMember, b: CWABot): boolean
 }
 
+interface wgAuthQuery extends wgAPIQuery {
+    display?: "page" | "popup",
+    expires_at?: number,
+    nofollow?: 0 | 1,
+    redirect_uri: string
+}
 
 export default new CWABot()
 export { CWABot as CWAbot }
