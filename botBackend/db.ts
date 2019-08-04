@@ -23,13 +23,7 @@ export interface PlayerDBEntry {
     region: region,
     player: PlayerStatsOverviewData,
     clan: PlayerClanData | undefined,
-    language: Language,
     enforceNickname: Boolean,
-}
-
-export enum Language {
-    EN = 'en',
-    JP = 'jp'
 }
 
 class PlayerDB extends Enmap<Snowflake, PlayerDBEntry>{
@@ -64,7 +58,6 @@ class PlayerDB extends Enmap<Snowflake, PlayerDBEntry>{
             player: playerStats,
             clan: await player.clanData(),
             // Default them to EN language
-            language: Language.EN,
             enforceNickname: true
         };
 

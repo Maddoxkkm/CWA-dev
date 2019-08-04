@@ -2,9 +2,10 @@ import express from 'express'
 import CWABot from './botBackend/bot'
 
 import path from 'path';
+
 const main = express();
 
-const cwabot = new CWABot();
+const cwabot = CWABot;
 
 main.use((req, res, next) => {
     console.log(req.path)
@@ -19,6 +20,6 @@ main.all('/', (req, res) => {
 
 main.use('/api/verify/', cwabot.verificationApp)
 main.use((req, res, next) => res.redirect('/'))
-main.listen(3000)
+main.listen(80)
 
 cwabot.startBot();
