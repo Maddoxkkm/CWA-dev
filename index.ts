@@ -16,5 +16,5 @@ webService.use((req, res, next) => res.redirect('/'))
 https.createServer({
     key: fs.readFileSync(sslkeyLoc),
     cert: fs.readFileSync(sslcertLoc)
-}, webService).listen(443)
+}, webService).listen(443).on('tlsClientError', (err, socket) => console.log(err));
 webService.listen(80)
