@@ -3,6 +3,7 @@ import CWABot from './botBackend/bot'
 import webService from './webService/app'
 import https from 'https'
 import fs from 'fs'
+import {localdebugging} from './settings.json'
 
 import {sslcertLoc, sslkeyLoc} from './settings.json'
 
@@ -13,9 +14,12 @@ cwabot.startBot();
 webService.use('/api/verify/', cwabot.verificationApp)
 webService.use((req, res, next) => {res.redirect('/'); res.end()})
 
-https.createServer({
-    key: fs.readFileSync(sslkeyLoc),
-    cert: fs.readFileSync(sslcertLoc)
-}, webService).listen(443)
-    .on('tlsClientError', (err, socket) => console.error(err));
+if(!localdebugging){
+    https.createServer({
+        key: fs.readFileSync(sslkeyLoc),
+        cert: fs.readFileSync(sslcertLoc)
+    }, webService).listen(443)
+        .on('tlsClientError', (err, socket) => console.error(err));
+}
+
 webService.listen(80)
