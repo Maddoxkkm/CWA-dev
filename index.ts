@@ -11,7 +11,7 @@ const cwabot = CWABot;
 cwabot.startBot();
 
 webService.use('/api/verify/', cwabot.verificationApp)
-webService.use((req, res, next) => res.redirect('/'))
+webService.use((req, res, next) => {res.redirect('/'); res.end()})
 
 https.createServer({
     key: fs.readFileSync(sslkeyLoc),

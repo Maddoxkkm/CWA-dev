@@ -14,6 +14,7 @@ webService.use(express.static(path.join(__dirname, "public")));
 
 webService.all('/', (req, res) => {
     res.sendFile(path.join(__dirname, "public/index.html"))
+    res.end()
 });
 
 export default webService
