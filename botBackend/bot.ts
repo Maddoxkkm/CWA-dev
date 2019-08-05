@@ -69,7 +69,7 @@ class CWABot extends Client {
     // Message Handler (for commands)
     private async messageHandler(message: Message): Promise<void> {
         // get user id in guild
-        const guildUser: GuildMember | undefined = this.servingGuild.members.get(message.member.id)
+        const guildUser: GuildMember | undefined = this.servingGuild.members.get(message.author.id)
         if (!guildUser) return;
         const rawMsg: string = message.cleanContent;
 
