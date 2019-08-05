@@ -224,7 +224,7 @@ class CWABot extends Client {
         user.setNickname(nickname).catch(console.error)
     }
 
-    public verificationApp: Express =
+    public readonly verificationApp: Express =
         express()
             .use(express.urlencoded({ extended: true }))
             .get('/:server/:discordID', (req, res) => {
