@@ -125,7 +125,7 @@ class CWABot extends Client {
 
     private async sendVerification(user: GuildMember): Promise<void> {
         const query: wgAuthQuery = {
-            redirect_uri: `http://${this.serverDomain}${this.verificationApp.mountpath}ASIA/${user.user.id}/`,
+            redirect_uri: `https://${this.serverDomain}${this.verificationApp.mountpath}ASIA/${user.user.id}/`,
             nofollow: 1
         }
 
