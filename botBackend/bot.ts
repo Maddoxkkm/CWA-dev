@@ -146,10 +146,10 @@ class CWABot extends Client {
             user.send('', embed).then(() => console.log(`sent verification link to ${user.user.username} (${user.id})`)).catch(console.error)
             return;
 
-        } catch (e) {console.error(e)}
-        
+        } catch (e) { console.error(e) }
 
-        
+
+
     }
 
     // Role Grant (Hard-coded Roles ID)

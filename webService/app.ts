@@ -6,7 +6,7 @@ const webService = express();
 webService.use(express.json());
 
 webService.use((req, res, next) => {
-    console.log(req.path)
+    console.log(`HTTP: ${req.path}, ip:${req.ip}`)
     next();
 })
 
