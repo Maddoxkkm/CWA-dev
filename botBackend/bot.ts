@@ -238,26 +238,18 @@ class CWABot extends Client {
                 // Data Organization & Validation
                 const query = req.query;
                 const params = req.params;
-                if (!params.server || !params.discordID || !query.status || !query.access_token || !query.nickname || !query.account_id || !query.expires_at) {
-                    res.status(400).send("400 Invalid Request to API Endpoint");
-                    return res.end();
-                }
+                if (!params.server || !params.discordID || !query.status || !query.access_token || !query.nickname || !query.account_id || !query.expires_at) return res.status(400).send("400 Invalid Request to API Endpoint");
+
 
                 const server: region | undefined = stringToRegion(params.server);
                 const discordID: Snowflake = params.discordID;
 
                 const user: GuildMember | undefined = this.servingGuild.members.get(discordID);
 
-                if (!server || !user) {
-                    res.status(400).send("400 Bad Request");
-                    return res.end()
-                }
+                if (!server || !user) return res.status(400).send("400 Bad Request");
 
                 const servData = regionData[server];
-                if (query.status !== "ok") {
-                    res.status(401).send("401 Unauthorized");
-                    return res.end();
-                }
+                if (query.status !== "ok") return res.status(401).send("401 Unauthorized");
                 // From here on in all the Data validation should be completed, and should only return error page only if token obtaining is unsuccessful.
 
                 // now we've got everything, time to grab the access token (and verify it), 
@@ -274,13 +266,11 @@ class CWABot extends Client {
                         this.grantRoles(user);
                         this.nicknameChange(user);
 
-                        res.send("Your Player data and Discord account has now been linked. Your roles and nickname in the server will be updated shortly")
-                        return res.end()
+                        return res.send("Your Player data and Discord account has now been linked. Your roles and nickname in the server will be updated shortly")
                     })
                     .catch(reply => {
                         console.log(reply)
-                        res.status(401).send("Illegal Access Token")
-                        return res.end()
+                        return res.status(401).send("Illegal Access Token")
                     })
             })
 }
