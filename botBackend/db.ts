@@ -23,7 +23,8 @@ export interface PlayerDBEntry {
     region: region,
     player: PlayerStatsOverviewData,
     clan: PlayerClanData | undefined,
-    enforceNickname: Boolean,
+    enforceNickname: boolean,
+    notificationRole: boolean
 }
 
 class PlayerDB extends Enmap<Snowflake, PlayerDBEntry>{
@@ -57,8 +58,9 @@ class PlayerDB extends Enmap<Snowflake, PlayerDBEntry>{
             region: realm,
             player: playerStats,
             clan: await player.clanData(),
-            // Default them to EN language
-            enforceNickname: true
+            enforceNickname: true,
+            // Default them to Receive all notifications
+            notificationRole: true,
         };
 
         this.set(discordID, data);
@@ -71,7 +73,7 @@ class PlayerDB extends Enmap<Snowflake, PlayerDBEntry>{
     }
 
     public async updateProfile(discordID: Snowflake, playerUpdatePeriod: number = 43200000): Promise<PlayerDBOperationResults> {
-        let profile: PlayerDBEntry | undefined = this.get(discordID);
+        const profile: PlayerDBEntry | undefined = this.get(discordID);
         if (!profile) throw 4
 
         const now: number = new Date().getTime();
@@ -91,6 +93,28 @@ class PlayerDB extends Enmap<Snowflake, PlayerDBEntry>{
             this.set(discordID, profile)
             return 0;
         } else return 5;
+    }
+
+    public async toggleNicknameEnforce(discordID: Snowflake): Promise<boolean> {
+        const profile: PlayerDBEntry | undefined = this.get(discordID);
+        if (!profile) throw 4
+
+        const newBool: boolean = !profile.enforceNickname
+        profile.enforceNickname = newBool;
+
+        this.set(discordID, profile);
+        return newBool
+    }
+
+    public async toggleNotification(discordID: Snowflake): Promise<boolean> {
+        const profile: PlayerDBEntry | undefined = this.get(discordID);
+        if (!profile) throw 4
+
+        const newBool: boolean = !profile.notificationRole
+        profile.notificationRole = newBool;
+
+        this.set(discordID, profile);
+        return newBool
     }
 }
 

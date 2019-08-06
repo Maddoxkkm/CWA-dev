@@ -162,7 +162,8 @@ class CWABot extends Client {
             [CWARoles.Verified,
             CWARoles.ClanDeputies,
             CWARoles.ClanLeader,
-            CWARoles.ClanMembers]
+            CWARoles.ClanMembers,
+            CWARoles.Verified]
                 // Change them into strings first (since we won't be needing them in enum form)
                 .map(x => x.toString())
 
@@ -170,6 +171,7 @@ class CWABot extends Client {
         const roleArray: CWARoles[] = [];
 
         if (playerEntry) {
+            if (playerEntry.notificationRole) roleArray.push(CWARoles.Notification)
             // A verified player should have at least 10 battles.
             if (playerEntry.player.statistics.all.battles > 10) {
                 // "Verified"
@@ -198,6 +200,8 @@ class CWABot extends Client {
                 }
             }
 
+        } else {
+            roleArray.push(CWARoles.Notification)
         }
 
         // Turn the roles into snowflakes
@@ -221,6 +225,8 @@ class CWABot extends Client {
         else
             nickname = `${playerEntry.player.nickname} [${playerEntry.clan.clan.tag}]`
 
+        // Add extra check to ensure it's not changing nickname even if it's the same 
+        if (nickname === user.nickname) return
         user.setNickname(nickname).catch(console.error)
     }
 
@@ -287,7 +293,8 @@ export const enum CWARoles {
     ClanLeader = "603936091560476683",
     ClanDeputies = "604240305624973323",
     ClanMembers = "604155231915343891",
-    Verified = "603936154038829067"
+    Verified = "603936154038829067",
+    Notification = "608323805487824918"
 }
 
 export interface command {
