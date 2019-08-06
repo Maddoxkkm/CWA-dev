@@ -163,7 +163,7 @@ class CWABot extends Client {
             CWARoles.ClanDeputies,
             CWARoles.ClanLeader,
             CWARoles.ClanMembers,
-            CWARoles.Verified]
+            CWARoles.Notification]
                 // Change them into strings first (since we won't be needing them in enum form)
                 .map(x => x.toString())
 
