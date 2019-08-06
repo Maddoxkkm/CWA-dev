@@ -6,7 +6,9 @@ const webService = express();
 webService.use(express.json());
 
 webService.use((req, res, next) => {
-    console.log(`HTTP: ${req.path}, ip:${req.ip}`)
+    res.on("finish", () => {
+        if (res.statusCode !== 404) {console.log(`HTTP: "${req.path}", ip: ${req.ip}, time: ${new Date().toUTCString()}`)}
+    })
     next();
 })
 

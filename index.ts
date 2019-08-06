@@ -12,7 +12,7 @@ const cwabot = CWABot;
 cwabot.startBot();
 
 webService.use('/api/verify/', cwabot.verificationApp)
-webService.use((req, res, next) => {res.redirect('/'); res.end()})
+webService.use((req, res, next) => {res.sendStatus(404)})
 
 if(!localdebugging){
     https.createServer({
