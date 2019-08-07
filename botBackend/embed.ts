@@ -12,5 +12,6 @@ export class CWAEmbed extends RichEmbed {
 
 
 export enum EmbedColor {
-    Basic = 3097087
+    Basic = 3097087,
+    Error = 16711680
 }
