@@ -6,7 +6,7 @@ export default class TryHardCounter {
     private urlSet: Set<string>;
     private ipSet: Set<string>;
 
-    constructor(catcherInterval: number = 86400000) {
+    constructor(catcherInterval: number = 43200000) {
         this.catchInterval = catcherInterval;
         this.counter = 0;
         this.urlSet = new Set();
