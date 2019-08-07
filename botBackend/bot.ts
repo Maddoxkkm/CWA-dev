@@ -5,7 +5,8 @@ import { Client, Snowflake, Guild, GuildMember, Message, Channel, User } from 'd
 import express, { Express } from 'express';
 
 // Import Settings and various tokens
-import { debug, prefix, targetGuild, discordToken, domain, localdebugging } from '../settings.json';
+import { prefix, targetGuild, domain } from '../settings.json';
+import { discordToken, localdebugging } from '../secrets.json'
 
 import WGAPICaller from './wg-api/caller'
 
@@ -21,6 +22,10 @@ import Player from './player';
 import { CWAEmbed, EmbedColor } from './embed';
 import { wgAPIQuery } from './wg-api/interface.js';
 
+import { wgAPIQuery } from './wg-api/interface';
+import CWABotError from './error';
+import Logger from './logger';
+
 class CWABot extends Client {
     private readonly loginToken: string;
     public db: DB;
@@ -35,16 +40,16 @@ class CWABot extends Client {
         else this.serverDomain = domain;
 
         // Chain On events here
-        this.on("error", console.error);
+        this.on("error", Logger.error);
 
         // Chuck Invite link to console 
         this.on("ready", () => {
             this.generateInvite(["ADMINISTRATOR"])
-                .then(link => console.log(`Link for the invite is ${link}`))
-                .catch(console.error)
+                .then(link => Logger.log(`Link for the invite is ${link}`))
+                .catch(Logger.error)
             // this.user.setAvatar(this.servingGuild.iconURL)
-            //     .then(() => console.log('Logo Update Successful!'))
-            //     .catch(console.error)
+            //     .then(() => Logger.log('Logo Update Successful!'))
+            //     .catch(Logger.error)
         })
 
         // Message Handler (Commands and stuff)
@@ -118,7 +123,7 @@ class CWABot extends Client {
     public async startBot(): Promise<void> {
         this.login(this.loginToken)
             .then(() => {
-                console.log("Bot Login Successful!")
+                Logger.log("Bot Login Successful!")
                 return;
             })
     }
@@ -227,52 +232,52 @@ class CWABot extends Client {
 
         // Add extra check to ensure it's not changing nickname even if it's the same 
         if (nickname === user.nickname) return
-        user.setNickname(nickname).catch(console.error)
+        user.setNickname(nickname).catch(Logger.error)
     }
 
-    public readonly verificationApp: Express =
-        express()
-            .use(express.urlencoded({ extended: true }))
-            .get('/:server/:discordID', (req, res) => {
+    public readonly verificationApp: Express = express()
+        .use(express.urlencoded({ extended: true }))
+        .get('/:server/:discordID', (req, res) => {
 
-                // Data Organization & Validation
-                const query = req.query;
-                const params = req.params;
-                if (!params.server || !params.discordID || !query.status || !query.access_token || !query.nickname || !query.account_id || !query.expires_at) return res.status(400).send("400 Invalid Request to API Endpoint");
+            // Data Organization & Validation
+            const query = req.query;
+            const params = req.params;
+            if (!params.server || !params.discordID || !query.status || !query.access_token || !query.nickname || !query.account_id || !query.expires_at) return res.status(400).send("400 Invalid Request to API Endpoint");
 
 
-                const server: region | undefined = stringToRegion(params.server);
-                const discordID: Snowflake = params.discordID;
+            const server: region | undefined = stringToRegion(params.server);
+            const discordID: Snowflake = params.discordID;
 
-                const user: GuildMember | undefined = this.servingGuild.members.get(discordID);
+            const user: GuildMember | undefined = this.servingGuild.members.get(discordID);
 
-                if (!server || !user) return res.status(400).send("400 Bad Request");
+            if (!server || !user) return res.status(400).send("400 Bad Request");
 
-                const servData = regionData[server];
-                if (query.status !== "ok") return res.status(401).send("401 Unauthorized");
-                // From here on in all the Data validation should be completed, and should only return error page only if token obtaining is unsuccessful.
+            if (query.status !== "ok") return res.status(401).send("401 Unauthorized");
+            // From here on in all the Data validation should be completed, and should only return error page only if token obtaining is unsuccessful.
 
-                // now we've got everything, time to grab the access token (and verify it), 
-                // not using the player ID directly (because the call can be made up and checking validity of token is more secure)
-                // Changed strategy from token renewal to directly verifying with player request
-                new Player(query.account_id, server, query.access_token).statsOverview()
-                    .then(async () => {
-                        // If it's a validated player
-                        const account_id = query.account_id;
+            // now we've got everything, time to grab the access token (and verify it), 
+            // not using the player ID directly (because the call can be made up and checking validity of token is more secure)
+            // Changed strategy from token renewal to directly verifying with player request
+            new Player(query.account_id, server, query.access_token).statsOverview()
+                .then(async () => {
+                    // If it's a validated player
+                    const account_id = query.account_id;
 
-                        if (this.db.hasPlayer(user.id, account_id)) return res.status(403).send("User has been registered")
-                        await this.db.setPlayer(account_id, server, discordID);
+                    if (this.db.hasPlayer(user.id, account_id)) return res.status(403).send("User has been registered")
+                    await this.db.setPlayer(account_id, server, discordID);
 
-                        this.grantRoles(user);
-                        this.nicknameChange(user);
+                    this.grantRoles(user);
+                    this.nicknameChange(user);
 
-                        return res.send("Your Player data and Discord account has now been linked. Your roles and nickname in the server will be updated shortly")
-                    })
-                    .catch(reply => {
-                        console.log(reply)
-                        return res.status(401).send("Illegal Access Token")
-                    })
-            })
+                    // Redirect them back to discord yay
+                    return res.redirect("discord://discordapp.com/channels/401733517794476032/403393667101884416")
+                    //return res.send("Your Player data and Discord account has now been linked. Your roles and nickname in the server will be updated shortly")
+                })
+                .catch(reply => {
+                    Logger.log(reply)
+                    return res.status(401).send("Illegal Access Token")
+                })
+        })
 }
 
 export const enum CWARoles {

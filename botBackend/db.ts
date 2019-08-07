@@ -6,7 +6,7 @@ import { Snowflake } from 'discord.js';
 import Player from './player';
 import { PlayerStatsOverviewData, PlayerClanData } from './wg-api/interface';
 
-import { debug } from '../settings.json'
+import { debug } from '../secrets.json'
 
 export enum PlayerDBOperationResults {
     Okay = 0,
@@ -37,6 +37,10 @@ class PlayerDB extends Enmap<Snowflake, PlayerDBEntry>{
             super(`mainStorage`);
         }
         this.debug = debug;
+    }
+
+    public get getSet(): Set<PlayerDBEntry> {
+        return new Set(this.values());
     }
 
     public async setPlayer(wgID: number, realm: region, discordID: Snowflake): Promise<PlayerDBOperationResults> {

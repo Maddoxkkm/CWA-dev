@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from "express";
+import Logger from '../botBackend/logger'
 
 export default class TryHardCounter {
     readonly catchInterval: number;
@@ -28,7 +29,7 @@ export default class TryHardCounter {
     }
 
     private logAndClearCounter = (): void => {
-        console.log(`The number of tryhard attempts in the recent loggable period is: ${this.counter}, from ${this.ipSet.size} unique tryhards, and them tryharding on ${this.urlSet.size} different paths :D`)
+        Logger.log(`The number of tryhard attempts in the recent loggable period is: ${this.counter}, from ${this.ipSet.size} unique tryhards, and them tryharding on ${this.urlSet.size} different paths :D`)
         this.counter = 0;
         this.urlSet.clear();
         this.ipSet.clear();

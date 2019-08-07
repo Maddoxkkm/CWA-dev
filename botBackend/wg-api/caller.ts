@@ -1,7 +1,7 @@
 import { wgAPIReply, wgAPIQuery } from './interface';
 import { request } from '../request'
 
-import { wgAPIToken } from '../../settings.json';
+import { wgAPIToken } from '../../secrets.json';
 
 class WGAPICaller {
     private readonly token: string;

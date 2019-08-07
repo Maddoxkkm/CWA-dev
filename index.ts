@@ -3,11 +3,12 @@ import CWABot from './botBackend/bot'
 import webService from './webService/app'
 import https from 'https'
 import fs from 'fs'
-import {localdebugging} from './settings.json'
 
-import {sslcertLoc, sslkeyLoc} from './settings.json'
+import {sslcertLoc, sslkeyLoc, localdebugging} from './secrets.json'
 
 import TryHardCounter from './webService/tryHard'
+
+import Logger from './botBackend/logger'
 
 
 // Beware Tryhards, I'm coming for you!
@@ -28,7 +29,7 @@ if(!localdebugging){
         key: fs.readFileSync(sslkeyLoc),
         cert: fs.readFileSync(sslcertLoc)
     }, webService).listen(443)
-        .on('tlsClientError', (err, socket) => console.error(err));
+        .on('tlsClientError', (err, socket) => Logger.error(err));
 }
 
 webService.listen(80)
