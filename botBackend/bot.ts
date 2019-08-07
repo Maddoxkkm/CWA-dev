@@ -20,7 +20,6 @@ import { stringToRegion, region, regionData } from './region';
 // WG API Callers
 import Player from './player';
 import { CWAEmbed, EmbedColor } from './embed';
-import { wgAPIQuery } from './wg-api/interface.js';
 
 import { wgAPIQuery } from './wg-api/interface';
 import CWABotError from './error';
@@ -44,12 +43,12 @@ class CWABot extends Client {
 
         // Chuck Invite link to console 
         this.on("ready", () => {
-            this.generateInvite(["ADMINISTRATOR"])
-                .then(link => Logger.log(`Link for the invite is ${link}`))
-                .catch(Logger.error)
-            // this.user.setAvatar(this.servingGuild.iconURL)
-            //     .then(() => Logger.log('Logo Update Successful!'))
-            //     .catch(Logger.error)
+            this.user.setPresence({
+                game: {
+                    name: `${prefix}help | wotbcw.asia`
+                },
+                status: 'online'
+            })
         })
 
         // Message Handler (Commands and stuff)

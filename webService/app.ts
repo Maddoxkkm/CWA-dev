@@ -9,7 +9,7 @@ webService.use(express.json());
 
 webService.use((req, res, next) => {
     res.on("finish", () => {
-        if (res.statusCode !== 404) {Logger.log(`HTTP: "${req.path}", ip: ${req.ip}, time: ${new Date().toUTCString()}`)}
+        if (res.statusCode !== 404) {Logger.log(`HTTP: "${req.baseUrl ? req.baseUrl + req.path : req.path}", ip: ${req.ip}, time: ${new Date().toUTCString()}`)}
     })
     next();
 })
