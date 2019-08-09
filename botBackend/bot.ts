@@ -94,21 +94,36 @@ class CWABot extends Client {
 
         if (!command.permission(guildUser, this)) return;
 
-        const embedReturn: CWAEmbed = await command.embedConstruct(message, this);
-        if (command.forceReplyinPM) {
-            guildUser.send('', embedReturn)
-                .then(() => Logger.log(`Executed ${command.name} and Sent PM for ${message.author.username} (${message.author.id})`))
-                .catch(() => {
-                    const embed: CWAEmbed = new CWAEmbed(this)
-                        .setColor(EmbedColor.Error)
-                        .setDescription(`${this.user.username} Failed to send you Personal Messages. Please turn on "Allow direct messages from server members" option from "Privacy Settings"`)
-                    message.reply('', { embed })
-                    Logger.error(`Has Attempted to sent PM to ${message.author.username} (${message.author.id}), but has already notified about action.`)
-                })
-        } else
-            message.channel.send('', embedReturn)
-                .then(() => Logger.log(`Executed ${command.name} and Sent Reply for ${message.author.username} (${message.author.id})`))
+        try {
+            const embedReturn: CWAEmbed = await command.embedConstruct(message, this)
 
+            if (command.forceReplyinPM) {
+                guildUser.send('', embedReturn)
+                    .then(() => Logger.log(`Executed ${command.name} and Sent PM for ${message.author.username} (${message.author.id})`))
+                    .catch(() => {
+                        const embed: CWAEmbed = new CWAEmbed(this)
+                            .setColor(EmbedColor.Error)
+                            .setDescription(`${this.user.username} Failed to send you Personal Messages. Please turn on "Allow direct messages from server members" option from "Privacy Settings"`)
+                        message.reply('', { embed })
+                        Logger.error(`Has Attempted to sent PM to ${message.author.username} (${message.author.id}), but has already notified about action.`)
+                    })
+            } else
+                message.channel.send('', embedReturn)
+                    .then(() => Logger.log(`Executed ${command.name} and Sent Reply for ${message.author.username} (${message.author.id})`))
+        } catch (error) {
+            const embed: CWAEmbed = new CWAEmbed(this).setColor(EmbedColor.Error)
+            if (error instanceof CWABotError) {
+                if (error.errorCode > 0) {
+                    embed.setDescription(`**${error.returnError}**\n\n${error.returnrecommendation}`)
+                        .addField("Debug Information: Stacktrace", error.stack)
+                    message.channel.send('', embed)
+                }
+            }
+            const fakeError = new CWABotError(0);
+            embed.setDescription(`**${fakeError.returnError}**\n\n${fakeError.returnrecommendation}`)
+                .addField("Debug Information: Stacktrace", error.stack)
+            message.channel.send('', embed)
+        }
     }
 
     private get commandMap(): Map<string, command> {
@@ -152,13 +167,13 @@ class CWABot extends Client {
 
     private async verifcationEmbed(user: User): Promise<CWAEmbed> {
         const query: wgAuthQuery = {
-            redirect_uri: `https://${this.serverDomain}${this.verificationApp.mountpath}ASIA/${user.user.id}/`,
+            redirect_uri: `https://${this.serverDomain}${this.verificationApp.mountpath}ASIA/${user.id}/`,
             nofollow: 1
         }
 
         try {
             const redirectObject: any = (await WGAPICaller.call(`https://api.worldoftanks.asia/wot/auth/login/`, query)).data;
-            if (!redirectObject.location) return;
+            if (!redirectObject.location) throw new CWABotError(1)
             const url: string = redirectObject.location
 
             const embed: CWAEmbed = new CWAEmbed(this)
@@ -170,13 +185,11 @@ class CWABot extends Client {
                 which will only give us information about your Account ID and an Token which we will use to verify your identity.\n
                 The link will expire after a certain amount of time.\n\n[Click Here To Verify!!](${url})`)
 
-            user.send('', embed).then(() => console.log(`sent verification link to ${user.user.username} (${user.id})`)).catch(console.error)
-            return;
+            return embed
 
         } catch (e) { console.error(e) }
 
-
-
+        throw new CWABotError(0)
     }
 
     // Role Grant (Hard-coded Roles ID)
