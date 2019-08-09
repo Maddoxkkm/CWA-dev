@@ -6,12 +6,12 @@ class Logger extends WebhookClient {
         super(loggingWebhook.id, loggingWebhook.token)
     }
 
-    public error(message?: any, ...optionalParams: any[]): void{
+    public error = (message?: any, ...optionalParams: any[]): void => {
         this.send(`\`${message} ${optionalParams.join(" ")}\``)
         console.error(message, optionalParams)
     }
 
-    public log(message?: any, ...optionalParams: any[]): void{
+    public log = (message?: any, ...optionalParams: any[]): void => {
         this.send(`\`${message} ${optionalParams.join(" ")}\``)
         console.log(message, ...optionalParams)
     }

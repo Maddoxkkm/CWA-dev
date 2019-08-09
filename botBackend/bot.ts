@@ -24,6 +24,7 @@ import { CWAEmbed, EmbedColor } from './embed';
 import { wgAPIQuery } from './wg-api/interface';
 import CWABotError from './error';
 import Logger from './logger';
+import { eqSet } from './util';
 
 class CWABot extends Client {
     private readonly loginToken: string;
@@ -40,6 +41,8 @@ class CWABot extends Client {
 
         // Chain On events here
         this.on("error", Logger.error);
+
+        this.on("rateLimit", Logger.log)
 
         // Chuck Invite link to console 
         this.on("ready", () => {
@@ -65,15 +68,20 @@ class CWABot extends Client {
 
         // Periodic Updater (Timer Automated)
         this.setInterval(() => {
-            this.servingGuild.members.forEach((member: GuildMember) => {
-                if (member && !member.user.bot){
-                    if (this.db.hasPlayer(member.id)) this.db.updateProfile(member.id).then(result => {
-                        if (result === PlayerDBOperationResults.Okay) {
-                            this.nicknameChange(member);
-                        }
-                    })
-                    this.grantRoles(member);
-                } 
+            this.servingGuild.members.map((member: GuildMember) => {
+                this.setTimeout(() => {
+                    console.log("fst")
+                    if (!member.user.bot){
+                        console.log("snd")
+                        if (this.db.hasPlayer(member.id)) this.db.updateProfile(member.id).then(result => {
+                            if (result === PlayerDBOperationResults.Okay) {
+                                this.nicknameChange(member);
+                            }
+                        })
+                        this.grantRoles(member);
+                        console.log("thrd")
+                    } 
+                }, 1000)
             })
             return;
         }, 900000) // per 15 minutes
@@ -249,7 +257,7 @@ class CWABot extends Client {
         // make a list of roles (from current user) that cannot be granted via this method and combine with list of roles granted right now.
         roleSFArray = roleSFArray.concat(user.roles.array().map(x => x.id).filter(x => roleHere.indexOf(x) === -1))
         // Update roles on the user
-        user.setRoles(roleSFArray).catch(Logger.error);
+        if (!eqSet( new Set(roleSFArray), new Set(user.roles.array().map(x => x.id)))) user.setRoles(roleSFArray).catch(Logger.error);
     }
 
     private async nicknameChange(user: GuildMember): Promise<void> {
