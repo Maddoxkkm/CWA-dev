@@ -54,20 +54,29 @@ class CWABot extends Client {
         // Message Handler (Commands and stuff)
         this.on("message", this.messageHandler)
 
-        // Player Updater (whenever they start typing will conduct an check)
-        this.on("typingStart", (channel: Channel, user: User): void => {
-            const guildUser: GuildMember | undefined = this.servingGuild.members.get(user.id);
-            if (!guildUser) return;
-            if (this.db.hasPlayer(guildUser.id)) this.db.updateProfile(guildUser.id).then(result => {
-                if (result === PlayerDBOperationResults.Okay) {
-                    this.nicknameChange(guildUser);
-                    this.grantRoles(guildUser);
-                }
-            })
+        // Member Join Handler (new member joining)
+        this.on("guildMemberAdd", async (member: GuildMember) => {
+            if (this.db.hasPlayer(member.id)) this.nicknameChange(member)
+            else member.send("", await this.verifcationEmbed(member.user))
+                .then(() => Logger.log(`sent verification link to ${member.user.username} (${member.id})`))
+                .catch(Logger.error)
+            this.grantRoles(member)
         })
 
-        // Member Join Handler (new member joining)
-        //this.on("guildMemberAdd")
+        // Periodic Updater (Timer Automated)
+        this.setInterval(() => {
+            this.servingGuild.members.forEach((member: GuildMember) => {
+
+                const guildUser: GuildMember | undefined = this.servingGuild.members.get(member.id);
+                if (!guildUser) return;
+                if (this.db.hasPlayer(guildUser.id)) this.db.updateProfile(guildUser.id).then(result => {
+                    if (result === PlayerDBOperationResults.Okay) {
+                        this.nicknameChange(guildUser);
+                    }
+                })
+                this.grantRoles(guildUser);
+            })//
+        }, 9000000) // per 15 minutes
     }
 
     // Message Handler (for commands)
@@ -85,7 +94,20 @@ class CWABot extends Client {
 
         if (!command.permission(guildUser, this)) return;
 
-        return command.do(message, this)
+        const embedReturn: CWAEmbed = await command.embedConstruct(message, this);
+        if (command.forceReplyinPM) {
+            guildUser.send('', embedReturn)
+                .then(() => Logger.log(`Executed ${command.name} and Sent PM for ${message.author.username} (${message.author.id})`))
+                .catch(() => {
+                    const embed: CWAEmbed = new CWAEmbed(this)
+                        .setColor(EmbedColor.Error)
+                        .setDescription(`${this.user.username} Failed to send you Personal Messages. Please turn on "Allow direct messages from server members" option from "Privacy Settings"`)
+                    message.reply('', { embed })
+                    Logger.error(`Has Attempted to sent PM to ${message.author.username} (${message.author.id}), but has already notified about action.`)
+                })
+        } else
+            message.channel.send('', embedReturn)
+                .then(() => Logger.log(`Executed ${command.name} and Sent Reply for ${message.author.username} (${message.author.id})`))
 
     }
 
@@ -97,12 +119,13 @@ class CWABot extends Client {
                     command: "verify",
                     usage: `${prefix}verify`,
                     description: `Allows you to link your Wargaming Account with your Discord Account within ${this.user.setUsername}`,
-                    async do(d: Message, b: CWABot): Promise<void> {
-                        b.sendVerification(d.member)
+                    async embedConstruct(d: Message, b: CWABot): Promise<CWAEmbed> {
+                        return b.verifcationEmbed(d.author)
                     },
                     permission: (user: GuildMember, b: CWABot): boolean => {
                         return !this.db.hasPlayer(user.id) && !!b.servingGuild.members.get(user.id)
-                    }
+                    },
+                    forceReplyinPM: true
                 }]
             ]
         )
@@ -127,7 +150,7 @@ class CWABot extends Client {
             })
     }
 
-    private async sendVerification(user: GuildMember): Promise<void> {
+    private async verifcationEmbed(user: User): Promise<CWAEmbed> {
         const query: wgAuthQuery = {
             redirect_uri: `https://${this.serverDomain}${this.verificationApp.mountpath}ASIA/${user.user.id}/`,
             nofollow: 1
@@ -214,7 +237,7 @@ class CWABot extends Client {
         // make a list of roles (from current user) that cannot be granted via this method and combine with list of roles granted right now.
         roleSFArray = roleSFArray.concat(user.roles.array().map(x => x.id).filter(x => roleHere.indexOf(x) === -1))
         // Update roles on the user
-        user.setRoles(roleSFArray).catch(console.error);
+        user.setRoles(roleSFArray).catch(Logger.error);
     }
 
     private async nicknameChange(user: GuildMember): Promise<void> {
@@ -296,8 +319,9 @@ export interface command {
     command: string,
     usage: string,
     description: string,
-    do(m: Message, b: CWABot): Promise<void>,
-    permission(u: GuildMember, b: CWABot): boolean
+    embedConstruct(m: Message, b: CWABot): Promise<CWAEmbed>,
+    permission(u: GuildMember, b: CWABot): boolean,
+    forceReplyinPM: boolean,
 }
 
 interface wgAuthQuery extends wgAPIQuery {

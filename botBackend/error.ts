@@ -11,7 +11,19 @@ export type BotError = {
     }
 }
 
-export const botErrors: BotError = {
+export default class CWABotError extends Error {
+    public readonly returnError: string;
+    public readonly returnrecommendation: string;
+    public readonly consolePrint: string;
+    constructor(errorCode: BotErrorCodes){
+        super()
+        this.returnError = botErrors[errorCode].returnError;
+        this.returnrecommendation = botErrors[errorCode].returnRecommendation;
+        this.consolePrint = botErrors[errorCode].consolePrint;
+    }
+}
+
+const botErrors: BotError = {
     0: {
         returnError: "Unexpected Error!",
         returnRecommendation: "Bot has encountered unexpected error, please try again later",
