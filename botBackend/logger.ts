@@ -7,12 +7,38 @@ class Logger extends WebhookClient {
     }
 
     public error = (message?: any, ...optionalParams: any[]): void => {
-        this.send(`\`${message} ${optionalParams.join(" ")}\``)
+        let string = '';
+        if( typeof message === "object"){
+            string += JSON.stringify(message)
+        } else {
+            string += message
+        }
+        optionalParams.map( item => {
+            if( typeof item === "object"){
+                string += "\n" + JSON.stringify(item) 
+            } else {
+                string += item
+            }
+        })
+        this.send(`\`${string}\``)
         console.error(message, optionalParams)
     }
 
     public log = (message?: any, ...optionalParams: any[]): void => {
-        this.send(`\`${message} ${optionalParams.join(" ")}\``)
+        let string = '';
+        if( typeof message === "object"){
+            string += JSON.stringify(message)
+        } else {
+            string += message
+        }
+        optionalParams.map( item => {
+            if( typeof item === "object"){
+                string += "\n" + JSON.stringify(item) 
+            } else {
+                string += item
+            }
+        })
+        this.send(`\`${string}\``)
         console.log(message, ...optionalParams)
     }
 }
