@@ -76,7 +76,7 @@ class CWABot extends Client {
                 })
                 this.grantRoles(guildUser);
             })//
-        }, 9000000) // per 15 minutes
+        }, 900000) // per 15 minutes
     }
 
     // Message Handler (for commands)
@@ -184,12 +184,11 @@ class CWABot extends Client {
                 We do not have access to your account details as you are logging in via Wargaming's Portal, 
                 which will only give us information about your Account ID and an Token which we will use to verify your identity.\n
                 The link will expire after a certain amount of time.\n\n[Click Here To Verify!!](${url})`)
+            return embed;
 
-            return embed
+        } catch (e) { Logger.error(e) }
+        throw new CWABotError(0);
 
-        } catch (e) { console.error(e) }
-
-        throw new CWABotError(0)
     }
 
     // Role Grant (Hard-coded Roles ID)
