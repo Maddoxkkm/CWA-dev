@@ -66,16 +66,17 @@ class CWABot extends Client {
         // Periodic Updater (Timer Automated)
         this.setInterval(() => {
             this.servingGuild.members.forEach((member: GuildMember) => {
-
                 const guildUser: GuildMember | undefined = this.servingGuild.members.get(member.id);
-                if (!guildUser) return;
-                if (this.db.hasPlayer(guildUser.id)) this.db.updateProfile(guildUser.id).then(result => {
-                    if (result === PlayerDBOperationResults.Okay) {
-                        this.nicknameChange(guildUser);
-                    }
-                })
-                this.grantRoles(guildUser);
-            })//
+                if (guildUser && !member.user.bot){
+                    if (this.db.hasPlayer(guildUser.id)) this.db.updateProfile(guildUser.id).then(result => {
+                        if (result === PlayerDBOperationResults.Okay) {
+                            this.nicknameChange(guildUser);
+                        }
+                    })
+                    this.grantRoles(guildUser);
+                } 
+            })
+            return;
         }, 900000) // per 15 minutes
     }
 
