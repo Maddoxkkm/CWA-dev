@@ -24,7 +24,7 @@ import { CWAEmbed, EmbedColor } from './embed';
 import { wgAPIQuery } from './wg-api/interface';
 import CWABotError from './error';
 import Logger from './logger';
-import { eqSet } from './util';
+import { eqSet, sleep } from './util';
 
 class CWABot extends Client {
     private readonly loginToken: string;
@@ -59,32 +59,37 @@ class CWABot extends Client {
 
         // Member Join Handler (new member joining)
         this.on("guildMemberAdd", async (member: GuildMember) => {
-            if (this.db.hasPlayer(member.id)) this.nicknameChange(member)
-            else member.send("", await this.verifcationEmbed(member.user))
+            if (!this.db.hasPlayer(member.id)) member.send("", await this.verifcationEmbed(member.user))
                 .then(() => Logger.log(`sent verification link to ${member.user.username} (${member.id})`))
                 .catch(Logger.error)
-            this.grantRoles(member)
+            this.memberUpdate(member)
         })
 
         // Periodic Updater (Timer Automated)
-        this.setInterval(() => {
-            this.servingGuild.members.map((member: GuildMember) => {
-                this.setTimeout(() => {
-                    console.log("fst")
-                    if (!member.user.bot){
-                        console.log("snd")
-                        if (this.db.hasPlayer(member.id)) this.db.updateProfile(member.id).then(result => {
-                            if (result === PlayerDBOperationResults.Okay) {
-                                this.nicknameChange(member);
-                            }
-                        })
-                        this.grantRoles(member);
-                        console.log("thrd")
-                    } 
-                }, 1000)
-            })
-            return;
-        }, 900000) // per 15 minutes
+        this.setInterval(async () => {
+            const fetchedGuild: Guild = await this.servingGuild.fetchMembers()
+            const memberList: GuildMember[] = Array.from(fetchedGuild.members.array())
+            for await (let member of memberList){
+                await this.memberUpdate(member)
+                await sleep(200)
+            }
+            Logger.log(`Periodic Updater, Checked nickname and role updates for ${memberList.length} members`)
+        }, 1800000) // per 30 minutes
+    }
+
+
+    // Role and Nickname updater (to simplify things)
+    private async memberUpdate(member: GuildMember): Promise<void>{
+        if (!member.user.bot) {
+            if (this.db.hasPlayer(member.id)) {
+                const result = await this.db.updateProfile(member.id)
+                if (result === PlayerDBOperationResults.Okay) {
+                    await this.nicknameChange(member);
+                }
+            }
+            await this.grantRoles(member);
+        }
+        return;
     }
 
     // Message Handler (for commands)
@@ -257,7 +262,7 @@ class CWABot extends Client {
         // make a list of roles (from current user) that cannot be granted via this method and combine with list of roles granted right now.
         roleSFArray = roleSFArray.concat(user.roles.array().map(x => x.id).filter(x => roleHere.indexOf(x) === -1))
         // Update roles on the user
-        if (!eqSet( new Set(roleSFArray), new Set(user.roles.array().map(x => x.id)))) user.setRoles(roleSFArray).catch(Logger.error);
+        if (!eqSet(new Set(roleSFArray), new Set(user.roles.array().map(x => x.id)))) user.setRoles(roleSFArray).catch(Logger.error);
     }
 
     private async nicknameChange(user: GuildMember): Promise<void> {

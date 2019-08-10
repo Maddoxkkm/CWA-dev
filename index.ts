@@ -29,7 +29,6 @@ if(!localdebugging){
         key: fs.readFileSync(sslkeyLoc),
         cert: fs.readFileSync(sslcertLoc)
     }, webService).listen(443)
-        .on('tlsClientError', (err, socket) => Logger.error(err));
 }
 
 webService.listen(80)
